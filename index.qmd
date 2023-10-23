@@ -1,0 +1,74 @@
+---
+title: "Food Waste"
+---
+
+```{r import libraries, echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(plotly)
+
+waste_stats <- read_csv("src/data/Food Waste Statistics.csv")
+UNEP_stats <- read_csv("src/data/UNEP Food Waste Statistics.csv")
+```
+
+<section class="row">
+
+<section class="col-lg-6">
+
+Write some text here.
+
+</section>
+
+<section class="col-lg-6">
+
+
+```{r, echo=FALSE, warning=FALSE}
+# starwars %>% select(name, mass) %>% arrange(desc(mass))
+colnames(UNEP_stats)[4] = "Household_estimate"
+
+top_5_countries <- UNEP_stats %>% select(Country, Household_estimate) %>% arrange(desc(Household_estimate)) %>% slice(1:5)
+ 
+additional_row <- UNEP_stats %>% filter(Country == "Singapore") %>% select(Country, Household_estimate)
+
+combined <- bind_rows(top_5_countries, additional_row)
+
+# ggplot(combined, aes(reorder(Country,-Household_estimate), Household_estimate)) + geom_col(fill = "#279b48") + theme(panel.background = element_blank(),
+#       panel.grid.major = element_blank()) + labs(x = "Countries" , y = "Household Estimate (Tonnes/Year)",caption = "Source: Kaggle - Household Food Waste Estimate of all Countries")
+
+ggplot(combined, aes(reorder(Country,Household_estimate), Household_estimate)) + geom_bar(stat = "identity", fill = "#279b48") + geom_text(aes(label=sprintf("%0.1f", round(Household_estimate, digits = 2))), hjust=-0.2, size=3) + coord_flip() + theme(panel.background = element_blank(),
+      panel.grid.major = element_blank()) + labs(x = "Countries" , y = "Household Estimate (Tonnes/Year)",caption = "Source: Kaggle - Household Food Waste Estimate of all Countries")
+```
+
+</section>
+
+<section class="col-lg-6">
+
+Write some text here as well
+
+</section>
+
+<section class="col-lg-6">
+
+```{r,echo=FALSE, warning=FALSE}
+colnames(waste_stats)[4] = "Total Waste Generated"
+food_waste_chart <- ggplot(waste_stats, aes(Year, `Total Waste Generated`))+
+  geom_line(colour = "red")+
+  ylim(c(0, 1000000)) + 
+  labs(
+    title = "Food Waste in Singapore",
+    x = colnames(waste_stats[1]), y = colnames(waste_stats[4])
+    ) +
+  theme(panel.background = element_blank(),
+      panel.grid.major = element_blank())
+
+
+ggplotly(food_waste_chart,tooltip = c("x","y")) %>% 
+  layout(yaxis = list(fixedrange=TRUE),
+         xaxis = list(fixedrange=TRUE)) %>% 
+  config(displayModeBar = FALSE)
+```
+
+</section>
+
+</section>
+
+</section>
