@@ -3,11 +3,15 @@ project:
   output-dir: docs
   
 website:
-  title: "Food Waste in Singapore"
+  title: "Food Waste"
   navbar:
     left:
       - href: index.qmd
         text: Home
+      - href: dashboard.qmd
+        text: Dashboard
+      - href: references.qmd
+        text: References  
       - href: about.qmd
         text: About Me
 

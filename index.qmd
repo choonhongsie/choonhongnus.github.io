@@ -1,32 +1,57 @@
----
-title: "Food Waste"
----
+<section class="image-container">
+
+<img src="src/images/Food Waste Background image.jpg" style="width: 100%;height:200px;object-fit:cover;"/>
+
+<h1 class="center-text-bg-img">
+
+Food Waste in Singapore
+
+</h1>
+
+<!-- <p class="bottom-right-text-bg-img"> -->
+
+<!-- Image by <a href="https://www.freepik.com/free-photo/close-up-hand-holding-wooden-board_14351726.htm#query=food%20waste&position=26&from_view=search&track=ais" target="_blank">Freepik</a> -->
+
+<!-- </p> -->
+
+</section>
+
+<section class="container">
+
+<h2 class="text-center fw-bold my-4">
+
+What is Food Waste?
+
+</h2>
+
+According to the <strong>United Nations' Food and Agricultural Organisation (FAO)</strong>,"food waste" refers to the discarding or non-food use of products that are safe and nutritious for human consumption
+
+<h2 class="text-center fw-bold my-4">
+
+Which Country Generated the most Household Food Waste?
+
+</h2>
 
 ```{r import libraries, echo=FALSE, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(plotly)
+library("ggchicklet")
+library(scales)
+library(highcharter) 
 
 waste_stats <- read_csv("src/data/Food Waste Statistics.csv")
 UNEP_stats <- read_csv("src/data/UNEP Food Waste Statistics.csv")
+colnames(UNEP_stats)[4] = "Household_estimate"
+
 ```
 
 <section class="row">
 
 <section class="col-lg-6">
 
-Write some text here.
-
-</section>
-
-<section class="col-lg-6">
-
-
 ```{r, echo=FALSE, warning=FALSE}
-# starwars %>% select(name, mass) %>% arrange(desc(mass))
-colnames(UNEP_stats)[4] = "Household_estimate"
-
 top_5_countries <- UNEP_stats %>% select(Country, Household_estimate) %>% arrange(desc(Household_estimate)) %>% slice(1:5)
- 
+
 additional_row <- UNEP_stats %>% filter(Country == "Singapore") %>% select(Country, Household_estimate)
 
 combined <- bind_rows(top_5_countries, additional_row)
@@ -34,8 +59,21 @@ combined <- bind_rows(top_5_countries, additional_row)
 # ggplot(combined, aes(reorder(Country,-Household_estimate), Household_estimate)) + geom_col(fill = "#279b48") + theme(panel.background = element_blank(),
 #       panel.grid.major = element_blank()) + labs(x = "Countries" , y = "Household Estimate (Tonnes/Year)",caption = "Source: Kaggle - Household Food Waste Estimate of all Countries")
 
-ggplot(combined, aes(reorder(Country,Household_estimate), Household_estimate)) + geom_bar(stat = "identity", fill = "#279b48") + geom_text(aes(label=sprintf("%0.1f", round(Household_estimate, digits = 2))), hjust=-0.2, size=3) + coord_flip() + theme(panel.background = element_blank(),
-      panel.grid.major = element_blank()) + labs(x = "Countries" , y = "Household Estimate (Tonnes/Year)",caption = "Source: Kaggle - Household Food Waste Estimate of all Countries")
+ggplot(combined, aes(reorder(Country, Household_estimate), Household_estimate)) + geom_chicklet(
+  radius = grid::unit(2, 'mm'),
+  fill = "#d31400"
+) + coord_flip(clip = "off") + geom_text(aes(label = format(
+  Household_estimate,
+  big.mark = ",",
+  scientific = FALSE
+)), hjust = -0.2) + theme(
+  panel.background = element_blank(),
+  panel.grid.major = element_blank(),
+  axis.ticks = element_blank(),
+  axis.text.x = element_blank(),
+  plot.margin = margin(r = 120)
+) + labs(x = "" , y = "", caption = "Source: Kaggle - Household Food Waste Estimate of all Countries") 
+
 ```
 
 </section>
@@ -48,17 +86,19 @@ Write some text here as well
 
 <section class="col-lg-6">
 
-```{r,echo=FALSE, warning=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
 colnames(waste_stats)[4] = "Total Waste Generated"
-food_waste_chart <- ggplot(waste_stats, aes(Year, `Total Waste Generated`))+
+# food_waste_stacked_chart <- ggplot()
+food_waste_chart <- ggplot(waste_stats, aes(Year, `Total Waste Generated`)) +
   geom_line(colour = "red")+
   ylim(c(0, 1000000)) + 
   labs(
     title = "Food Waste in Singapore",
-    x = colnames(waste_stats[1]), y = colnames(waste_stats[4])
-    ) +
-  theme(panel.background = element_blank(),
-      panel.grid.major = element_blank())
+    x = colnames(waste_stats[1]), y = colnames(waste_stats[4])) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_blank())
 
 
 ggplotly(food_waste_chart,tooltip = c("x","y")) %>% 
@@ -70,5 +110,40 @@ ggplotly(food_waste_chart,tooltip = c("x","y")) %>%
 </section>
 
 </section>
+
+<h2 class="text-center fw-bold my-4">
+
+Singapore's Food Waste From a Global Perspective
+
+</h2>
+
+Globally, around 17% of total global food production is wasted in households, in the food service and in retail all together (FAO, n.d.).
+
+```{r,echo=FALSE, warning=FALSE, message=FALSE}
+data(worldgeojson, package = "highcharter")
+
+countries <- UNEP_stats %>% select(Country, Household_estimate)
+
+highchart() %>%
+hc_title(text = "Household Food Waste by Countries (tonnes/year)") %>%
+hc_add_series_map(worldgeojson, countries,
+value = "Household_estimate", joinBy = c("name", "Country")) %>%
+hc_colorAxis(minColor = "white",
+maxColor = "red") %>%
+hc_legend(valueDecimals = 0, valueSuffix = "%") %>% hc_legend(valueDecimals = 0, valueSuffix = "%") %>%
+hc_mapNavigation(enabled = TRUE)
+```
+
+<h2 class="text-center fw-bold my-4">
+
+In Singapore
+
+</h2>
+
+According to the United Nations, it is estimated that 1.3 billion tonnes of food are wasted every year worldwide.
+
+In Singapore, a country with a strong food culture- we often buy, order, and cook more than what we need.
+
+Food waste is one of the top 3 waste generated in Singapore, behind paper and plastic waste.
 
 </section>
